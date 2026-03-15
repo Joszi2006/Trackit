@@ -182,13 +182,20 @@ export default function PlanPage() {
         {/* Registration results screen */}
         {regResults && (
           <SketchCard className="max-w-lg">
-            <p className="font-display text-2xl font-semibold mb-4">Registration complete</p>
+            <p className="font-display text-2xl font-semibold mb-4">
+              {regResults.partialFailure ? 'Some courses could not be registered' : 'Registration complete'}
+            </p>
             <div className="flex flex-col gap-2 mb-6">
               {regResults.results.map(r => (
-                <div key={r.sectionId} className="flex justify-between items-center text-sm">
-                  <span className="font-mono">{r.courseCode}</span>
-                  <Badge status={r.status === 'enrolled' ? 'enrolled' : r.status === 'waitlisted' ? 'delayed' : 'failed'}
-                    label={r.status} />
+                <div key={r.sectionId} className="flex flex-col gap-0.5">
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="font-mono">{r.courseCode}</span>
+                    <Badge status={r.status === 'enrolled' ? 'enrolled' : r.status === 'waitlisted' ? 'delayed' : 'failed'}
+                      label={r.status} />
+                  </div>
+                  {r.status === 'failed' && r.reason && (
+                    <p className="text-xs text-[var(--color-failed)]">{r.reason}</p>
+                  )}
                 </div>
               ))}
             </div>

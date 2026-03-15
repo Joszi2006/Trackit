@@ -5,7 +5,7 @@ import { Prisma } from '@prisma/client'
 import { prisma } from '@/backend/prisma'
 import type { BundleResult, RegistrationStatus, SectionResult } from '@/shared/types'
 
-const MAX_CREDITS = 18
+const MAX_CREDITS = 15
 
 // Internal shape — richer than the shared Section type, includes courseId + course metadata
 interface SectionMeta {

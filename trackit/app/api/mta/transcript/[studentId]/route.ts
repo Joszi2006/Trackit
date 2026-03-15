@@ -4,14 +4,15 @@ import { NextRequest, NextResponse } from 'next/server'
 import { buildMtaProfile } from '@/mock-self-service/mockMtaProfiles'
 
 export async function GET(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ studentId: string }> },
 ) {
   try {
     const { studentId } = await params
     const email = decodeURIComponent(studentId)
-    return NextResponse.json(buildMtaProfile(email))
+    const password = req.nextUrl.searchParams.get('pw') ?? ''
+    return NextResponse.json(buildMtaProfile(email, password))
   } catch (err) {
-    return NextResponse.json({ message: (err as Error).message }, { status: 500 })
+    return NextResponse.json({ message: (err as Error).message }, { status: 401 })
   }
 }

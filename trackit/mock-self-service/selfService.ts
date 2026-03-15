@@ -10,8 +10,8 @@ import type { MtaProfile } from '@/shared/types'
 
 const MTA_BASE = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
 
-export async function fetchMtaProfile(email: string, _password: string): Promise<MtaProfile> {
-  const url = `${MTA_BASE}/api/mta/transcript/${encodeURIComponent(email)}`
+export async function fetchMtaProfile(email: string, password: string): Promise<MtaProfile> {
+  const url = `${MTA_BASE}/api/mta/transcript/${encodeURIComponent(email)}?pw=${encodeURIComponent(password)}`
   const res = await fetch(url, { cache: 'no-store' })
   if (!res.ok) {
     const body = await res.json() as { message?: string }
