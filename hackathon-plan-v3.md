@@ -73,23 +73,23 @@ This sidesteps every ToS issue and is a cleaner, more honest product.
 ### Monorepo Structure
 ```
 Trackit/
-├── app/                        → all pages (Person 2)
-├── api/                        → all API routes (Person 1)
+├── app/                        → all pages
+├── api/                        → all API routes
 ├── lib/
 │   ├── engine/
-│   │   ├── graph.ts            → DAG + topological sort (Person 1)
-│   │   ├── distribution.ts     → set cover selector (Person 1)
-│   │   ├── scheduler.ts        → interval scheduling + scoring (Person 1)
-│   │   └── registration.ts     → bundle registration logic (Person 1)
+│   │   ├── graph.ts            → DAG + topological sort
+│   │   ├── distribution.ts     → set cover selector
+│   │   ├── scheduler.ts        → interval scheduling + scoring
+│   │   └── registration.ts     → bundle registration logic
 │   ├── ai/
-│   │   ├── parseGoal.ts        → Claude Haiku + fallback (Person 2)
-│   │   └── fallback.ts         → keyword matching (Person 2)
+│   │   ├── parseGoal.ts        → Claude Haiku + fallback
+│   │   └── fallback.ts         → keyword matching
 │   ├── session.ts              → iron-session config
 │   └── prisma.ts               → db client
 ├── prisma/
 │   ├── schema.prisma
 │   └── seed.ts
-└── components/                 → shared UI components (Person 2)
+└── components/                 → shared UI components
 ```
 
 ### Environment Variables
@@ -103,9 +103,9 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 
 ---
 
-## 5. Team Split
+## 5. Build Responsibilities
 
-### Person 1 — Backend + Algorithms
+### Backend + Algorithms
 - Prisma schema + seed data
 - DAG graph algorithm (graph.ts)
 - Distribution requirement selector (distribution.ts)
@@ -113,15 +113,14 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 - Registration bundle logic (registration.ts)
 - All API routes
 
-### Person 2 — Frontend + AI
+### Frontend + AI
 - All pages and UI components
 - Claude Haiku integration + keyword fallback
 - 4-year map visualization
 - Schedule review + confirmation flow
 - Zustand state management
 
-**Agree on the API contract BEFORE writing any code.**
-Person 1 exposes endpoints, Person 2 consumes them.
+**Define the API contract before wiring frontend to backend.**
 
 ---
 
@@ -988,27 +987,23 @@ Year 4: COMP 4711 (prereq: COMP 3711), COMP 4721, COMP 4731
 
 ## 17. Build Order
 
-### Phase 1 — Foundation (~1.5 hrs, parallel)
+### Phase 1 — Foundation
 
-**Person 1:**
 1. `npx create-next-app@latest Trackit --typescript --tailwind --app`
-2. `npm install prisma @prisma/client iron-session @anthropic-ai/sdk`
+2. `npm install prisma @prisma/client iron-session @anthropic-ai/sdk zustand`
 3. Write schema.prisma
 4. Write seed.ts
 5. `npx prisma migrate dev && npx prisma db seed`
-6. Expose `GET /api/courses` and `GET /api/student/:id`
+6. Set up Zustand store
+7. Build `/login` + iron-session POST `/api/auth/login`
+8. Build `/onboarding` (static, no API yet)
+9. Set up routing + layout
+10. Expose `GET /api/courses` and `GET /api/student/:id`
 
-**Person 2:**
-1. Set up Zustand store
-2. Build `/login` + iron-session POST `/api/auth/login`
-3. Build `/onboarding` (static, no API yet)
-4. Set up routing + layout
+**Checkpoint:** Hit the endpoints, confirm data renders in UI.
 
-**Sync:** Person 2 hits Person 1's endpoints, confirms data renders.
+### Phase 2 — Core Algorithms
 
-### Phase 2 — Core Algorithms (~2 hrs)
-
-**Person 1:**
 1. graph.ts — DAG + topological sort + failed course handling
 2. distribution.ts — set cover selector with prefix cap + cross-listed logic
 3. scheduler.ts — interval scheduling + branch-and-bound + scoring
@@ -1016,16 +1011,13 @@ Year 4: COMP 4711 (prereq: COMP 3711), COMP 4721, COMP 4731
 5. POST `/api/plan/generate`
 6. POST `/api/register/bundle`
 7. GET `/api/student/:id/degree-audit`
+8. `/plan/:semester` — schedule cards + weekly grid
+9. Claude Haiku career goal parser + keyword fallback
+10. 4-year map visualization on dashboard
+11. Registration confirmation + results screen
 
-**Person 2:**
-1. `/plan/:semester` — schedule cards + weekly grid
-2. Claude Haiku career goal parser + keyword fallback
-3. 4-year map visualization on dashboard
-4. Registration confirmation + results screen
+### Phase 3 — Polish
 
-### Phase 3 — Polish (~1.5 hrs)
-
-**Together:**
 1. Wire career goal parser to onboarding
 2. Wire degree audit + distribution tracker to dashboard
 3. Build `/self-service` page (institutional aesthetic)

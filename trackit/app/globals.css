@@ -1,0 +1,33 @@
+@import "tailwindcss";
+
+:root {
+  --color-bg:         #fafafa;
+  --color-card:       #ffffff;
+  --color-ink:        #1a1a1a;
+  --color-ink-light:  #6b7280;
+  --color-rule:       #e5e7eb;
+  --color-done:       #16a34a;
+  --color-active:     #2563eb;
+  --color-planned:    #9ca3af;
+  --color-failed:     #dc2626;
+  --color-delayed:    #d97706;
+  --color-character:  #f59e0b;
+  --color-goal:       #8b5cf6;
+}
+
+@theme inline {
+  --color-background: var(--color-bg);
+  --color-foreground: var(--color-ink);
+  --font-sans:        var(--font-geist-sans);
+  --font-mono:        var(--font-geist-mono);
+  --font-display:     var(--font-caveat);
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-ink);
+}
+
+.font-display {
+  font-family: var(--font-caveat), 'Caveat', cursive;
+}

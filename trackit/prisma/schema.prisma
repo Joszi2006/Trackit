@@ -1,0 +1,113 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Program {
+  id           String    @id @default(cuid())
+  name         String    @unique
+  faculty      String
+  totalCredits Int
+  description  String
+  courses      Course[]
+  students     Student[]
+}
+
+model Course {
+  id                String    @id @default(cuid())
+  code              String    @unique
+  crossListedCode   String?
+  name              String
+  credits           Int
+  programId         String
+  faculty           String
+  subjectPrefix     String
+  year              Int
+  isRequired        Boolean
+  prerequisites     String[]
+  corequisites      String[]
+  semestersOffered  String[]
+  offeringFrequency String
+  lastOfferedYear   Int?
+  careerTags        String[]
+  minYearStanding   Int       @default(1)
+  programRestricted Boolean   @default(false)
+  description       String
+  program           Program   @relation(fields: [programId], references: [id])
+  sections          Section[]
+}
+
+model Section {
+  id            String       @id @default(cuid())
+  courseId      String
+  sectionCode   String
+  type          String
+  semester      String
+  days          String[]
+  startTime     String
+  endTime       String
+  instructor    String       @default("TBA")
+  room          String
+  totalSeats    Int
+  enrolledCount Int          @default(0)
+  waitlistCount Int          @default(0)
+  enrollments   Enrollment[]
+  course        Course       @relation(fields: [courseId], references: [id])
+
+  @@unique([courseId, sectionCode, semester])
+}
+
+model Student {
+  id                  String       @id @default(cuid())
+  name                String
+  email               String       @unique
+  password            String
+  programId           String
+  startYear           Int
+  currentSemester     Int
+  standing            String       @default("good")
+  careerGoal          String?
+  careerTags          String[]
+  completedCourseIds  String[]
+  failedCourseIds     String[]
+  distributionChoices Json         @default("{}")
+  draftPlans          DraftPlan[]
+  enrollments         Enrollment[]
+  program             Program      @relation(fields: [programId], references: [id])
+}
+
+model Enrollment {
+  id           String   @id @default(cuid())
+  studentId    String
+  sectionId    String
+  status       String
+  registeredAt DateTime @default(now())
+  semester     String
+  section      Section  @relation(fields: [sectionId], references: [id])
+  student      Student  @relation(fields: [studentId], references: [id])
+
+  @@unique([studentId, sectionId])
+}
+
+model RegistrationWindow {
+  id       String   @id @default(cuid())
+  semester String   @unique
+  status   String
+  opensAt  DateTime
+  closesAt DateTime
+}
+
+model DraftPlan {
+  id        String   @id @default(cuid())
+  studentId String
+  semester  String
+  schedules Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  student   Student  @relation(fields: [studentId], references: [id])
+
+  @@unique([studentId, semester])
+}

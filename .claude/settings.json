@@ -1,0 +1,17 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 .claude/hooks/design-check.py",
+            "timeout": 15,
+            "statusMessage": "Checking design principles..."
+          }
+        ]
+      }
+    ]
+  }
+}
