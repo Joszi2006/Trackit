@@ -11,7 +11,7 @@ Violations are blocked. No exceptions.
 |-------|----------------|--------------------|
 | `frontend/` | `shared/types/` only | `backend/`, `prisma/` |
 | `app/(pages)/` | `frontend/components/`, `frontend/hooks/`, `shared/types/` | `backend/`, `prisma/` |
-| `app/api/` | `backend/`, `shared/types/` | `frontend/` |
+| `app/api/` | `backend/`, `mock-self-service/`, `shared/types/` | `frontend/` |
 | `backend/engine/` | `shared/types/` | `frontend/`, `app/`, `prisma/` (except registration.ts) |
 | `backend/ai/` | `shared/types/` | `frontend/`, `app/` |
 | `backend/prisma.ts` | `@prisma/client` only | everything else |

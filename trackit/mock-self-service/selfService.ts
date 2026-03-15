@@ -3,7 +3,7 @@
  * In development, calls the mock routes at /api/mta/*.
  * In production, replace APP_URL with the real MtA API base and add auth headers.
  *
- * Set APP_URL=http://localhost:3000 in .env.local for local development.
+ * Set NEXT_PUBLIC_APP_URL=http://localhost:3000 in .env for local development.
  */
 export type { MtaProfile } from '@/shared/types'
 import type { MtaProfile } from '@/shared/types'

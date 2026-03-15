@@ -12,6 +12,7 @@ interface SectionMeta {
   id: string
   courseId: string
   totalSeats: number
+  semester: string
   course: { code: string; credits: number; isRequired: boolean; corequisites: string[] }
 }
 
@@ -39,7 +40,7 @@ export async function registerBundle(
   const [sections, student] = await Promise.all([
     prisma.section.findMany({
       where: { id: { in: sectionIds } },
-      select: { id: true, courseId: true, totalSeats: true, course: { select: { code: true, credits: true, isRequired: true, corequisites: true } } },
+      select: { id: true, courseId: true, totalSeats: true, semester: true, course: { select: { code: true, credits: true, isRequired: true, corequisites: true } } },
     }),
     prisma.student.findUnique({ where: { id: studentId }, select: { completedCourseIds: true } }),
   ])
@@ -47,8 +48,9 @@ export async function registerBundle(
   if (!student) return buildFailResult(sectionIds, 'Student not found')
 
   const sectionMap = new Map(sections.map(s => [s.id, s]))
+  const enrollmentSemester = sections[0]?.semester ?? window.semester
   const context: RegistrationContext = {
-    semester: window.semester,
+    semester: enrollmentSemester,
     completedCourseIds: new Set(student.completedCourseIds),
     sectionMap,
     preferWaitlist,

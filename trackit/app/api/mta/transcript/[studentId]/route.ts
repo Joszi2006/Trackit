@@ -1,7 +1,7 @@
 // Mock MtA SIS — transcript endpoint.
 // Returns the student profile dispatched by email (the "student ID" in our mock).
 import { NextRequest, NextResponse } from 'next/server'
-import { buildMtaProfile } from '@/backend/mockMtaProfiles'
+import { buildMtaProfile } from '@/mock-self-service/mockMtaProfiles'
 
 export async function GET(
   _req: NextRequest,

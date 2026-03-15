@@ -28,6 +28,39 @@ export async function POST(req: NextRequest) {
 
     if (!student) return NextResponse.json({ message: 'Student not found' }, { status: 404 })
 
+    // If already enrolled this semester, return their registrations instead of re-running the engine.
+    // Only treat as fully registered if enrolled count matches the expected schedule size from the draft.
+    // A partial failure (some courses failed) should fall through to re-run the engine.
+    const [existingEnrollments, draft] = await Promise.all([
+      prisma.enrollment.findMany({
+        where: { studentId, semester, status: 'enrolled' },
+        include: { section: { include: { course: true } } },
+      }),
+      prisma.draftPlan.findUnique({
+        where: { studentId_semester: { studentId, semester } },
+        select: { schedules: true },
+      }),
+    ])
+    if (existingEnrollments.length > 0) {
+      const draftSchedules = (draft?.schedules as unknown as unknown[][]) ?? []
+      const minExpected = draftSchedules.length > 0
+        ? Math.min(...draftSchedules.map(s => (s as unknown[]).length))
+        : existingEnrollments.length
+      if (existingEnrollments.length >= minExpected) {
+        return NextResponse.json({
+          alreadyRegistered: true,
+          enrolledSections: existingEnrollments.map(e => ({
+            courseCode: e.section.course.code,
+            courseName: e.section.course.name,
+            days:       e.section.days,
+            startTime:  e.section.startTime,
+            endTime:    e.section.endTime,
+          })),
+          schedules: [], canRegister: false, canPreview: false,
+        })
+      }
+    }
+
     const rawEnrolled = await prisma.section.findMany({
       where: { enrollments: { some: { studentId, status: 'enrolled', semester } } },
     })

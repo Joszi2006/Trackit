@@ -10,7 +10,7 @@ import ProgressBar     from '@/frontend/components/ProgressBar'
 import Badge           from '@/frontend/components/Badge'
 import Button          from '@/frontend/components/Button'
 import SketchCard      from '@/frontend/components/SketchCard'
-import { semesterLabel } from '@/frontend/utils/semester'
+import { semesterLabel, nextSessionSlug } from '@/frontend/utils/semester'
 import type { Course } from '@/shared/types'
 
 const STANDING_LABEL: Record<string, string> = {
@@ -40,7 +40,7 @@ export default function DashboardPage() {
     </div>
   )
 
-  const { student, program, courses, window: regWindow } = data
+  const { student, program, courses, enrollments, window: regWindow } = data
   const completedSet = new Set(student.completedCourseIds)
 
   const creditsCompleted = courses
@@ -59,6 +59,14 @@ export default function DashboardPage() {
   }))
 
   const currentSemLabel = semesterLabel(student.currentSemester)
+
+  const registeredForOpenWindow = regWindow
+    ? enrollments.some(e => e.status === 'enrolled' && e.semester === regWindow.semester)
+    : false
+  const openWindowSlug = regWindow
+    ? regWindow.semester.toLowerCase().replace(' ', '-')
+    : null
+  const nextAfterOpenSlug = openWindowSlug ? nextSessionSlug(openWindowSlug) : null
 
   return (
     <div className="min-h-screen bg-[var(--color-bg)]">
@@ -102,7 +110,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Registration window banner */}
-        {regWindow?.status === 'open' && (
+        {regWindow?.status === 'open' && !registeredForOpenWindow && (
           <div className="mb-6 border-2 border-[var(--color-done)] bg-[#dcfce7] rounded-lg p-4 flex items-center justify-between"
             style={{ boxShadow: '3px 3px 0 var(--color-done)' }}>
             <div className="flex items-center gap-2">
@@ -111,8 +119,27 @@ export default function DashboardPage() {
                 {regWindow.semester} registration is <strong>OPEN</strong>
               </span>
             </div>
-            <Link href={`/plan/${regWindow.semester.toLowerCase().replace(' ', '-')}`}>
+            <Link href={`/plan/${openWindowSlug}`}>
               <Button variant="outline" className="text-xs py-1">Plan this semester →</Button>
+            </Link>
+          </div>
+        )}
+
+        {/* Registered banner — prompt to plan the second half of the session */}
+        {regWindow?.status === 'open' && registeredForOpenWindow && nextAfterOpenSlug && (
+          <div className="mb-6 border-2 border-[var(--color-done)] bg-[#dcfce7] rounded-lg p-4 flex items-center justify-between"
+            style={{ boxShadow: '3px 3px 0 var(--color-done)' }}>
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-[var(--color-done)]" />
+              <span className="text-sm font-medium text-[#15803d]">
+                {regWindow.semester} <strong>registered ✓</strong>
+                {' '}— plan the second half of your session
+              </span>
+            </div>
+            <Link href={`/plan/${nextAfterOpenSlug}`}>
+              <Button variant="outline" className="text-xs py-1">
+                Plan {nextAfterOpenSlug.replace('-', ' ').replace(/^\w/, c => c.toUpperCase())} →
+              </Button>
             </Link>
           </div>
         )}

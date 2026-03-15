@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma }             from '@/backend/prisma'
 import { getSession }         from '@/backend/session'
-import { fetchMtaProfile }    from '@/backend/selfService'
+import { fetchMtaProfile }    from '@/mock-self-service/selfService'
 import { buildSyncData, syncStudentProfile } from '@/backend/syncProfile'
 
 export async function POST(req: NextRequest) {

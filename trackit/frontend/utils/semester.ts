@@ -5,6 +5,13 @@ export function semesterLabel(semNum: number): string {
   return `Year ${year} · ${term}`
 }
 
+// fall-2026 → winter-2027. Returns null for winter (next Fall is a new session).
+export function nextSessionSlug(slug: string): string | null {
+  const [term, year] = slug.split('-')
+  if (term !== 'fall') return null
+  return `winter-${parseInt(year, 10) + 1}`
+}
+
 // "fall-2025" URL slug for the /plan/[semester] route
 export function semNumToSlug(semNum: number, startYear: number): string {
   const isFall = semNum % 2 === 1

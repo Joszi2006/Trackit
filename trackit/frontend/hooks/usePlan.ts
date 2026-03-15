@@ -4,13 +4,23 @@ import { useState } from 'react'
 import { useStore } from '@/frontend/store'
 import type { Section, CoreqWarning } from '@/shared/types'
 
+export interface EnrolledSection {
+  courseCode: string
+  courseName: string
+  days:       string[]
+  startTime:  string
+  endTime:    string
+}
+
 export interface PlanResult {
-  schedules:      Section[][]
-  canRegister:    boolean
-  canPreview:     boolean
-  message?:       string
-  suggestions?:   string[]
-  coreqWarnings?: CoreqWarning[]
+  schedules:          Section[][]
+  canRegister:        boolean
+  canPreview:         boolean
+  message?:           string
+  suggestions?:       string[]
+  coreqWarnings?:     CoreqWarning[]
+  alreadyRegistered?: boolean
+  enrolledSections?:  EnrolledSection[]
 }
 
 interface UsePlanResult {
