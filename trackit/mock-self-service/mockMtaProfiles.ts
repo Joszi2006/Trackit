@@ -26,6 +26,7 @@ const USERS: Record<string, MockUser> = {
       failedCourseCodes:    ['STAT 2111'],
     },
   },
+  
   'test1@mta.ca': {
     password: 'test1pass',
     profile: {
@@ -38,6 +39,33 @@ const USERS: Record<string, MockUser> = {
       failedCourseCodes:    [],
     },
   },
+
+  'miketa@mta.ca': {
+    password: 'test1pass',
+    profile: {
+      name:                 'Mike Ta',
+      program:              'Computer Science',
+      standing:             'good',
+      startYear:            2026,
+      currentSemester:      1,
+      completedCourseCodes: [],
+      failedCourseCodes:    [],
+    },
+  },
+  
+  'josh@mta.ca': {
+    password: 'test1pass',
+    profile: {
+      name:                 'Josh',
+      program:              'Biology',
+      standing:             'good',
+      startYear:            2026,
+      currentSemester:      1,
+      completedCourseCodes: [],
+      failedCourseCodes:    [],
+    },
+  },
+
   'test3@mta.ca': {
     password: 'test3pass',
     profile: {
