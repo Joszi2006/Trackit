@@ -5,7 +5,8 @@ import { selectDistributionCourses } from './distribution'
 import { generateSchedules } from './scheduler'
 import type { Course, CourseNode, Section, Student, ScheduleResult, CoreqWarning } from '@/shared/types'
 
-const MAX_BUNDLES = 10  // cap before passing to CSP solver; MRV ordering makes this effective
+const MAX_BUNDLES        = 10  // cap before passing to CSP solver; MRV ordering makes this effective
+const MAX_SCHEDULE_RESULTS = 3   // max unique course-set options returned to the UI
 
 export interface PipelineInput {
   student:             Student
@@ -76,7 +77,7 @@ export function runPipeline(input: PipelineInput): ScheduleResult {
     .map(n => ({
       course:   n,
       sections: sectionsByCourse.get(n.course.id) ?? [],
-      required: n.course.isRequired || retakableSet.has(n.course.id) || distributionSet.has(n.course.id),
+      required: n.course.isRequired || retakableSet.has(n.course.id),
     }))
 
   // Detect coreq warnings before trimming (run on full eligible set)
@@ -84,7 +85,37 @@ export function runPipeline(input: PipelineInput): ScheduleResult {
 
   // Stage 3 — select + sort bundles (MRV), then hand off to CSP solver
   const selectedBundles = selectBundles(allBundles, retakableSet)
-  const result = generateSchedules(selectedBundles, existingEnrollments)
+
+  // Run full pass (all bundles including distribution) to cover distribution slots
+  const resultFull = generateSchedules(selectedBundles, existingEnrollments)
+
+  // Run career pass (distribution removed) so career electives can fill the open slot
+  const nondistBundles = selectedBundles.filter(b => !distributionSet.has(b.course.course.id))
+  const resultCareer   = nondistBundles.length < selectedBundles.length
+    ? generateSchedules(nondistBundles, existingEnrollments)
+    : null
+
+  // Merge, deduplicate by course-set, re-rank by score against the full bundle context
+  const allSchedules = [
+    ...(resultFull.schedules ?? []),
+    ...(resultCareer?.schedules ?? []),
+  ]
+  const seen   = new Set<string>()
+  const unique = allSchedules.filter(s => {
+    const key = s.map(sec => sec.courseId).sort().join(',')
+    if (seen.has(key)) return false
+    seen.add(key)
+    return true
+  })
+  const ranked = unique
+    .map(s => ({ s, score: rankSchedule(s, selectedBundles, distributionSet) }))
+    .sort((a, b) => b.score - a.score)
+    .slice(0, MAX_SCHEDULE_RESULTS)
+    .map(r => r.s)
+
+  const result: ScheduleResult = ranked.length > 0
+    ? { ...resultFull, schedules: ranked }
+    : resultFull
 
   return coreqWarnings.length > 0 ? { ...result, coreqWarnings } : result
 }
@@ -159,6 +190,25 @@ function sortByConstraint(bundles: Bundle[], retakableSet: Set<string>): Bundle[
     if (tierOf(a) === 2) return b.course.careerScore - a.course.careerScore
     return a.sections.length - b.sections.length
   })
+}
+
+/**
+ * Ranks a schedule for the purposes of cross-pass deduplication.
+ * Distinguishes required (12), distribution (6), and career electives (careerScore)
+ * so that a career-matched elective beats a generic distribution course.
+ */
+function rankSchedule(
+  sections: Section[],
+  bundles: Bundle[],
+  distributionIds: Set<string>,
+): number {
+  const requiredIds = new Set(bundles.filter(b => b.required).map(b => b.course.course.id))
+  return sections.reduce((score, section) => {
+    if (requiredIds.has(section.courseId))     return score + 12
+    if (distributionIds.has(section.courseId)) return score + 6
+    const bundle = bundles.find(b => b.course.course.id === section.courseId)
+    return score + (bundle?.course.careerScore ?? 0)
+  }, 0)
 }
 
 // Returns false for every_two_years courses not offered in targetYear.

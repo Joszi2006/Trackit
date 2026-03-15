@@ -33,18 +33,28 @@ export function selectDistributionCourses(
     if (faculty) applyToSlot(course, faculty, state)
   }
 
-  const assigned: Course[] = []
-
-  for (const { course } of orderedCourses) {
-    if (completedSet.has(course.id)) continue
-
-    const faculty = resolveCourseFaculty(course, distributionChoices, state, studentFaculty)
+  // Group eligible candidates by faculty slot, then pick highest careerScore per slot
+  const candidatesByFaculty = new Map<string, CourseNode[]>()
+  for (const node of orderedCourses) {
+    if (completedSet.has(node.course.id)) continue
+    const faculty = resolveCourseFaculty(node.course, distributionChoices, state, studentFaculty)
     if (!faculty) continue
     if (!slotNeedsFilling(faculty, state)) continue
-    if (!prefixAllowed(course.subjectPrefix, faculty, state)) continue
+    if (!prefixAllowed(node.course.subjectPrefix, faculty, state)) continue
+    const group = candidatesByFaculty.get(faculty) ?? []
+    group.push(node)
+    candidatesByFaculty.set(faculty, group)
+  }
 
-    applyToSlot(course, faculty, state)
-    assigned.push(course)
+  const assigned: Course[] = []
+  for (const [faculty, candidates] of candidatesByFaculty) {
+    const sorted = [...candidates].sort((a, b) => b.careerScore - a.careerScore)
+    for (const node of sorted) {
+      if (!slotNeedsFilling(faculty, state)) break
+      if (!prefixAllowed(node.course.subjectPrefix, faculty, state)) continue
+      applyToSlot(node.course, faculty, state)
+      assigned.push(node.course)
+    }
   }
 
   return { assigned, distributionState: state }

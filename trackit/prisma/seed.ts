@@ -754,9 +754,22 @@ async function main() {
   // Courses that have labs — co-req bundle demo
   const coursesWithLabs = new Set(['COMP 1711', 'COMP 2711', 'STAT 2111', 'PHYS 1011'])
 
+  // Reset demo student accounts so they start fresh on next login.
+  // Order: enrollments → draftPlans → students (foreign-key safe).
+  const DEMO_EMAILS = [
+    'alex.johnson@mta.ca',
+    'test1@mta.ca',
+    'miketa@mta.ca',
+    'josh@mta.ca',
+    'test3@mta.ca',
+  ]
+  await prisma.enrollment.deleteMany({ where: { student: { email: { in: DEMO_EMAILS } } } })
+  await prisma.draftPlan.deleteMany({ where: { student: { email: { in: DEMO_EMAILS } } } })
+  await prisma.student.deleteMany({ where: { email: { in: DEMO_EMAILS } } })
+
   // Wipe all section data and rebuild from scratch on every seed run.
   // This removes stale rows from prior iterations (wrong year, wrong semester filter).
-  // Enrollments reference sections — delete them first (no cascade in schema).
+  // Any remaining enrollments (non-demo users) reference sections — delete them first.
   await prisma.enrollment.deleteMany({})
   await prisma.section.deleteMany({})
 
