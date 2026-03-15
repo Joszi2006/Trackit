@@ -148,13 +148,16 @@ function selectBundles(bundles: Bundle[], retakableSet: Set<string>): Bundle[] {
 }
 
 function sortByConstraint(bundles: Bundle[], retakableSet: Set<string>): Bundle[] {
+  const tierOf = (x: Bundle) =>
+    (x.required && (x.course.course.isRequired || retakableSet.has(x.course.course.id))) ? 0
+    : x.required ? 1
+    : 2
+
   return [...bundles].sort((a, b) => {
-    const tierOf = (x: Bundle) =>
-      (x.required && (x.course.course.isRequired || retakableSet.has(x.course.course.id))) ? 0
-      : x.required ? 1
-      : 2
     const tierDiff = tierOf(a) - tierOf(b)
-    return tierDiff !== 0 ? tierDiff : a.sections.length - b.sections.length
+    if (tierDiff !== 0) return tierDiff
+    if (tierOf(a) === 2) return b.course.careerScore - a.course.careerScore
+    return a.sections.length - b.sections.length
   })
 }
 

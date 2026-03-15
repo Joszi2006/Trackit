@@ -157,8 +157,8 @@ function computeCareerScore(
   careerTags: string[],
   adj: Map<string, string[]>,
 ): number {
-  const tagSet = new Set(careerTags)
-  const tagOverlap = course.careerTags.filter(t => tagSet.has(t)).length
-  const outDegreeBonus = (adj.get(course.id) ?? []).length
-  return tagOverlap + outDegreeBonus
+  const tagSet       = new Set(careerTags)
+  const tagOverlap   = course.careerTags.filter(t => tagSet.has(t)).length
+  const gatewayBonus = Math.min((adj.get(course.id) ?? []).length, 2)
+  return tagOverlap * 4 + gatewayBonus
 }
